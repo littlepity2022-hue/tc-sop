@@ -286,14 +286,21 @@ LOGIC_MAP = {
 
 
 def load_medication_db():
-  # 精準鎖定同目錄下的 meds.xlsx 檔案路徑
-  base_dir = os.path.dirname(os.path.abspath(__file__))
-  file_path = os.path.join(base_dir, "meds.xlsx")
+  # 改用最簡單直接的讀取方式，並尋找多種可能路徑
+  possible_paths = [
+      "meds.xlsx",
+      "./meds.xlsx",
+      os.path.join(os.path.dirname(os.path.abspath(__file__)), "meds.xlsx"),
+  ]
 
-  if not os.path.exists(file_path):
-    file_path = "meds.xlsx"
-    if not os.path.exists(file_path):
-      return None
+  file_path = None
+  for path in possible_paths:
+    if os.path.exists(path):
+      file_path = path
+      break
+
+  if not file_path:
+    return None
 
   try:
     df = pd.read_excel(file_path, engine="openpyxl").fillna("")
@@ -308,7 +315,8 @@ def load_medication_db():
         if str(row["Location"]).strip()
     }
     return db
-  except Exception:
+  except Exception as e:
+    print(f"Excel Load Error: {e}")
     return None
 
 
@@ -1183,5 +1191,6 @@ elif app_mode == "👶 小兒藥師：藥物劑量計算系統 (App B)":
             st.info(f"💡 備註: {med['note']}")
   else:
     st.error(
-        "❌ 找不到 meds.xlsx 檔案，請確認 meds.xlsx 已與此程式放在同一目錄下。"
+        "❌ 找不到 meds.xlsx 檔案！請確認 GitHub 根目錄有上傳命名為"
+        " `meds.xlsx` 的檔案（注意副檔名及大小寫）。"
     )
