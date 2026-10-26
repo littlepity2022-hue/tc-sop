@@ -286,9 +286,15 @@ LOGIC_MAP = {
 
 
 def load_medication_db():
-  file_path = "meds.xlsx"
+  # 精準鎖定同目錄下的 meds.xlsx 檔案路徑
+  base_dir = os.path.dirname(os.path.abspath(__file__))
+  file_path = os.path.join(base_dir, "meds.xlsx")
+
   if not os.path.exists(file_path):
-    return None
+    file_path = "meds.xlsx"
+    if not os.path.exists(file_path):
+      return None
+
   try:
     df = pd.read_excel(file_path, engine="openpyxl").fillna("")
     db = {
